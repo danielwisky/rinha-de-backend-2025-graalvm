@@ -2,13 +2,12 @@ version: "3.8"
 
 services:
   api01: &api
-    image: danielwisky/rinha:latest
+    image: rinhadebackend:0.0.1-SNAPSHOT
     hostname: api01
     environment:
-      - SPRING_PROFILES_ACTIVE=production
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/rinha
-      - SPRING_DATASOURCE_USERNAME=rinha
-      - SPRING_DATASOURCE_PASSWORD=password
+      - POSTGRES_URI=jdbc:postgresql://db:5432/rinha
+      - POSTGRES_USER=rinha
+      - POSTGRES_PASSWORD=rinha
       - PAYMENT_PROCESSOR_DEFAULT_URL=http://payment-processor-default:8080
       - PAYMENT_PROCESSOR_FALLBACK_URL=http://payment-processor-fallback:8080
     expose:
@@ -55,7 +54,7 @@ services:
     image: postgres:15-alpine
     hostname: db
     environment:
-      - POSTGRES_PASSWORD=password
+      - POSTGRES_PASSWORD=rinha
       - POSTGRES_USER=rinha
       - POSTGRES_DB=rinha
     volumes:

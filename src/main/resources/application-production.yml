@@ -12,6 +12,6 @@ spring:
 
 external-api:
   payment-processor:
-    url: ${PAYMENT_PROCESSOR_DEFAULT_URL}
+    url: ${PAYMENT_PROCESSOR_DEFAULT_URL:http://payment-processor-default:8080}
   payment-processor-fallback:
-    url: ${PAYMENT_PROCESSOR_FALLBACK_URL}
+    url: ${PAYMENT_PROCESSOR_FALLBACK_URL:http://payment-processor-fallback:8080}
