@@ -6,4 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface PaymentEntityPostgreSQLRepository
     extends JpaRepository<PaymentEntity, Long>, PaymentEntityCustomPostgreSQLRepository {
 
+  boolean existsByCorrelationId(String correlationId);
 }

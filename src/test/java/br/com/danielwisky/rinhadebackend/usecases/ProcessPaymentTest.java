@@ -29,12 +29,13 @@ class ProcessPaymentTest extends TestSupport {
   private ExternalPaymentGateway externalPaymentGateway;
 
   @Test
-  @DisplayName("should process payment successfully on first attempt")
-  void shouldProcessPaymentSuccessfullyOnFirstAttempt() throws Exception {
+  @DisplayName("should process payment successfully when correlation id does not exist")
+  void shouldProcessPaymentSuccessfullyWhenCorrelationIdDoesNotExist() throws Exception {
     // Given
     final Payment inputPayment = PaymentTemplate.valid();
     final Payment externalPayment = PaymentTemplate.validDefault();
 
+    when(paymentDataGateway.existsByCorrelationId(inputPayment.getCorrelationId())).thenReturn(false);
     when(externalPaymentGateway.payment(inputPayment)).thenReturn(externalPayment);
     when(paymentDataGateway.save(externalPayment)).thenReturn(externalPayment);
 
@@ -42,8 +43,26 @@ class ProcessPaymentTest extends TestSupport {
     processPayment.execute(inputPayment);
 
     // Then
+    verify(paymentDataGateway).existsByCorrelationId(inputPayment.getCorrelationId());
     verify(externalPaymentGateway).payment(inputPayment);
     verify(paymentDataGateway).save(externalPayment);
+  }
+
+  @Test
+  @DisplayName("should skip processing when correlation id already exists")
+  void shouldSkipProcessingWhenCorrelationIdAlreadyExists() throws Exception {
+    // Given
+    final Payment inputPayment = PaymentTemplate.valid();
+
+    when(paymentDataGateway.existsByCorrelationId(inputPayment.getCorrelationId())).thenReturn(true);
+
+    // When
+    processPayment.execute(inputPayment);
+
+    // Then
+    verify(paymentDataGateway).existsByCorrelationId(inputPayment.getCorrelationId());
+    verify(externalPaymentGateway, never()).payment(any());
+    verify(paymentDataGateway, never()).save(any());
   }
 
   @Test
@@ -53,6 +72,7 @@ class ProcessPaymentTest extends TestSupport {
     final Payment inputPayment = PaymentTemplate.valid();
     final Payment externalPayment = PaymentTemplate.validFallback();
 
+    when(paymentDataGateway.existsByCorrelationId(inputPayment.getCorrelationId())).thenReturn(false);
     when(externalPaymentGateway.payment(inputPayment))
         .thenThrow(new RuntimeException("External service error"))
         .thenThrow(new RuntimeException("External service error"))
@@ -63,6 +83,7 @@ class ProcessPaymentTest extends TestSupport {
     processPayment.execute(inputPayment);
 
     // Then
+    verify(paymentDataGateway, times(3)).existsByCorrelationId(inputPayment.getCorrelationId());
     verify(externalPaymentGateway, times(3)).payment(inputPayment);
     verify(paymentDataGateway).save(externalPayment);
   }
@@ -74,6 +95,7 @@ class ProcessPaymentTest extends TestSupport {
     final Payment inputPayment = PaymentTemplate.valid();
     final Payment externalPayment = PaymentTemplate.validDefault();
 
+    when(paymentDataGateway.existsByCorrelationId(inputPayment.getCorrelationId())).thenReturn(false);
     when(externalPaymentGateway.payment(inputPayment)).thenReturn(externalPayment);
     when(paymentDataGateway.save(externalPayment))
         .thenThrow(new RuntimeException("Database error"))
@@ -84,6 +106,7 @@ class ProcessPaymentTest extends TestSupport {
     processPayment.execute(inputPayment);
 
     // Then
+    verify(paymentDataGateway, times(3)).existsByCorrelationId(inputPayment.getCorrelationId());
     verify(externalPaymentGateway, times(3)).payment(inputPayment);
     verify(paymentDataGateway, times(3)).save(externalPayment);
   }
@@ -94,6 +117,7 @@ class ProcessPaymentTest extends TestSupport {
     // Given
     final Payment inputPayment = PaymentTemplate.valid();
 
+    when(paymentDataGateway.existsByCorrelationId(inputPayment.getCorrelationId())).thenReturn(false);
     when(externalPaymentGateway.payment(inputPayment))
         .thenThrow(new RuntimeException("External service error"));
 
@@ -101,6 +125,7 @@ class ProcessPaymentTest extends TestSupport {
     processPayment.execute(inputPayment);
 
     // Then
+    verify(paymentDataGateway, times(3)).existsByCorrelationId(inputPayment.getCorrelationId());
     verify(externalPaymentGateway, times(3)).payment(inputPayment);
     verify(paymentDataGateway, never()).save(any());
   }

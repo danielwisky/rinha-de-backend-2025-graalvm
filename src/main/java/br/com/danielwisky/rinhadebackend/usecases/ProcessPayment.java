@@ -27,6 +27,10 @@ public class ProcessPayment {
     }
 
     try {
+      if (paymentDataGateway.existsByCorrelationId(payment.getCorrelationId())) {
+        return;
+      }
+
       final var externalPayment = externalPaymentGateway.payment(payment);
       paymentDataGateway.save(externalPayment);
     } catch (Exception e) {

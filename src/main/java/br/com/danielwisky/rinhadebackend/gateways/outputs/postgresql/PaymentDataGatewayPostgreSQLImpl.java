@@ -24,4 +24,9 @@ public class PaymentDataGatewayPostgreSQLImpl implements PaymentDataGateway {
   public PaymentSummary getPaymentSummary(final LocalDateTime from, final LocalDateTime to) {
     return repository.getPaymentSummary(from, to).toDomain();
   }
+
+  @Override
+  public boolean existsByCorrelationId(String correlationId) {
+    return repository.existsByCorrelationId(correlationId);
+  }
 }

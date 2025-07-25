@@ -9,4 +9,6 @@ public interface PaymentDataGateway {
   Payment save(Payment payment);
 
   PaymentSummary getPaymentSummary(LocalDateTime from, LocalDateTime to);
+
+  boolean existsByCorrelationId(String correlationId);
 }
