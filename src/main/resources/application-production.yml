@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: ${POSTGRES_URI}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+  jpa:
+    hibernate.ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+external-api:
+  payment-processor:
+    url: ${PAYMENT_PROCESSOR_DEFAULT_URL}
+  payment-processor-fallback:
+    url: ${PAYMENT_PROCESSOR_FALLBACK_URL}

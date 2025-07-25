@@ -1,0 +1,5 @@
+external-api:
+  payment-processor:
+    url: http://payment-processor-default:8080
+  payment-processor-fallback:
+    url: http://payment-processor-fallback:8080
