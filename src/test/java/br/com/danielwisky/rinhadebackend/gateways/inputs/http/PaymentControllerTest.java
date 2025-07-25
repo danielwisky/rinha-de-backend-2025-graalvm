@@ -1,8 +1,10 @@
 package br.com.danielwisky.rinhadebackend.gateways.inputs.http;
 
 import static br.com.danielwisky.rinhadebackend.domains.enums.ProcessorType.DEFAULT;
+import static br.com.danielwisky.rinhadebackend.domains.enums.ProcessorType.FALLBACK;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockserver.matchers.Times.exactly;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 import static org.mockserver.model.JsonBody.json;
@@ -13,6 +15,7 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
 import static org.testcontainers.shaded.org.awaitility.Awaitility.await;
 
 import br.com.danielwisky.rinhadebackend.supports.TestContainerSupport;
+import br.com.danielwisky.rinhadebackend.templates.resources.PaymentFallbackResponseTemplate;
 import br.com.danielwisky.rinhadebackend.templates.resources.PaymentRequestTemplate;
 import br.com.danielwisky.rinhadebackend.templates.resources.PaymentResponseTemplate;
 import br.com.danielwisky.rinhadebackend.utils.JsonUtils;
@@ -65,5 +68,34 @@ class PaymentControllerTest extends TestContainerSupport {
     assertEquals(payment.getAmount(), paymentEntity.getAmount());
     assertEquals(payment.getCorrelationId(), paymentEntity.getCorrelationId());
     assertEquals(DEFAULT.name(), paymentEntity.getProcessorType());
+  }
+
+  @Test
+  @DisplayName("should process payment using fallback when first attempt fails")
+  void shouldProcessPaymentUsingFallbackWhenFirstAttemptFails() throws Exception {
+    final var payment = PaymentRequestTemplate.valid();
+    final var externalFallbackPayment = PaymentFallbackResponseTemplate.valid();
+
+    mockServerClient
+        .when(request().withPath("/payments"), exactly(1))
+        .respond(response().withStatusCode(400));
+
+    mockServerClient
+        .when(request().withPath("/payments"))
+        .respond(response().withStatusCode(200).withBody(json(externalFallbackPayment)));
+
+    mockMVC.perform(post("/payments")
+            .contentType(APPLICATION_JSON)
+            .content(jsonUtils.toJson(payment)))
+        .andExpect(status().isAccepted());
+
+    await()
+        .atMost(Duration.ofSeconds(5))
+        .untilAsserted(() -> assertThat(paymentEntityPostgreSQLRepository.count()).isEqualTo(1));
+
+    final var paymentEntity = paymentEntityPostgreSQLRepository.findAll().getFirst();
+    assertEquals(payment.getAmount(), paymentEntity.getAmount());
+    assertEquals(payment.getCorrelationId(), paymentEntity.getCorrelationId());
+    assertEquals(FALLBACK.name(), paymentEntity.getProcessorType());
   }
 }

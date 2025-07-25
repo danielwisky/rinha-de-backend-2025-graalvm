@@ -6,6 +6,19 @@ spring:
       client:
         composite-indicator:
           enabled: false
+    openfeign:
+      circuitbreaker:
+        enabled: true
+      client:
+        config:
+          payment-processor:
+            connectTimeout: 2000
+            readTimeout: 3000
+            loggerLevel: basic
+          payment-processor-fallback:
+            connectTimeout: 2000
+            readTimeout: 3000
+            loggerLevel: basic
   lifecycle:
     timeout-per-shutdown-phase: 30s
   jackson:
