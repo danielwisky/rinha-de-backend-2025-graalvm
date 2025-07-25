@@ -22,6 +22,6 @@ public class PaymentDataGatewayPostgreSQLImpl implements PaymentDataGateway {
 
   @Override
   public PaymentSummary getPaymentSummary(final LocalDateTime from, final LocalDateTime to) {
-    return null;
+    return repository.getPaymentSummary(from, to).toDomain();
   }
 }

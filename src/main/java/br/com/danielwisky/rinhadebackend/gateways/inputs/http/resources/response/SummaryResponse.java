@@ -22,4 +22,8 @@ public class SummaryResponse implements Serializable {
     this.totalRequests = summary.getTotalRequests();
     this.totalAmount = summary.getTotalAmount();
   }
+
+  public static SummaryResponse empty() {
+    return new SummaryResponse(0, 0.0);
+  }
 }
