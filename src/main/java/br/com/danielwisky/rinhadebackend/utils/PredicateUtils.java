@@ -12,6 +12,15 @@ import java.util.Objects;
 
 public class PredicateUtils {
 
+  public static void addIsNotNull(
+      final List<Predicate> criterion,
+      final CriteriaBuilder criteriaBuilder,
+      final Root<?> root,
+      final String fieldName) {
+    final Path<String> path = root.get(fieldName);
+    criterion.add(criteriaBuilder.isNotNull(path));
+  }
+
   public static void addGreaterThanOrEqualToIfNotNull(
       final List<Predicate> predicates,
       final CriteriaBuilder criteriaBuilder,

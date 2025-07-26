@@ -98,4 +98,41 @@ class PaymentControllerTest extends TestContainerSupport {
     assertEquals(payment.getCorrelationId(), paymentEntity.getCorrelationId());
     assertEquals(FALLBACK.name(), paymentEntity.getProcessorType());
   }
+
+  @Test
+  @DisplayName("should handle duplicate correlationId gracefully")
+  void shouldHandleDuplicateCorrelationIdGracefully() throws Exception {
+    final var payment = PaymentRequestTemplate.valid();
+    final var externalPayment = PaymentResponseTemplate.valid();
+
+    mockServerClient
+        .when(request().withPath("/payments"))
+        .respond(response().withStatusCode(200).withBody(json(externalPayment)));
+
+    // First payment - should be processed successfully
+    mockMVC.perform(post("/payments")
+            .contentType(APPLICATION_JSON)
+            .content(jsonUtils.toJson(payment)))
+        .andExpect(status().isAccepted());
+
+    await()
+        .atMost(Duration.ofSeconds(5))
+        .untilAsserted(() -> assertThat(paymentEntityPostgreSQLRepository.count()).isEqualTo(1));
+
+    // Second payment with same correlationId - should be accepted but not duplicated
+    mockMVC.perform(post("/payments")
+            .contentType(APPLICATION_JSON)
+            .content(jsonUtils.toJson(payment)))
+        .andExpect(status().isAccepted());
+
+    // Should still have only 1 payment in database (idempotency)
+    await()
+        .atMost(Duration.ofSeconds(2))
+        .untilAsserted(() -> assertThat(paymentEntityPostgreSQLRepository.count()).isEqualTo(1));
+
+    final var paymentEntity = paymentEntityPostgreSQLRepository.findAll().getFirst();
+    assertEquals(payment.getAmount(), paymentEntity.getAmount());
+    assertEquals(payment.getCorrelationId(), paymentEntity.getCorrelationId());
+    assertEquals(DEFAULT.name(), paymentEntity.getProcessorType());
+  }
 }
