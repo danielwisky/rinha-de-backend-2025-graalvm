@@ -6,11 +6,8 @@ import br.com.danielwisky.rinhadebackend.gateways.outputs.PaymentDataGateway;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class ProcessPayment {
@@ -30,13 +27,12 @@ public class ProcessPayment {
     }
 
     try {
-      final var paymentSaved = paymentDataGateway.save(payment);
-      final var externalPayment = externalPaymentGateway.payment(paymentSaved);
+      if (paymentDataGateway.existsByCorrelationId(payment.getCorrelationId())) {
+        return;
+      }
+
+      final var externalPayment = externalPaymentGateway.payment(payment);
       paymentDataGateway.save(externalPayment);
-    } catch (DataIntegrityViolationException e) {
-      log.debug(
-          "Payment with correlation ID {} already exists, skipping external payment processing.",
-          payment.getCorrelationId());
     } catch (Exception e) {
       retryPayment(payment, attempts - 1);
     }
