@@ -13,8 +13,9 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ProcessPayment {
 
-  private static final int ATTEMPTS = 20;
-  private static final int DELAY = 50;
+  private static final int ATTEMPTS = 50;
+  private static final int DELAY = 150;
+  private static final int MAX_DELAY_MS = 1000;
 
   private final PaymentDataGateway paymentDataGateway;
   private final ExternalPaymentGateway externalPaymentGateway;
@@ -40,16 +41,17 @@ public class ProcessPayment {
       // Duplicate correlation_id - already processed, don't retry
       log.debug("Payment with correlation_id {} already exists, skipping - OK", payment.getCorrelationId());
     } catch (Exception e) {
-      log.warn("Payment {} failed on attempt {}: {}", payment.getCorrelationId(), 6 - attempts, e.getMessage());
+      log.debug("Payment {} failed on attempt {}: {}", payment.getCorrelationId(), 6 - attempts, e.getMessage());
 
       if (attempts > 1) {
         // Exponential backoff - wait before retry to avoid overwhelming services
-        int delayMs = ((ATTEMPTS + 1) - attempts) * DELAY;
+        int delayMs = Math.min(((ATTEMPTS + 1) - attempts) * DELAY, MAX_DELAY_MS);
+        log.debug("Waiting {}ms before retry for payment {}", delayMs, payment.getCorrelationId());
         try {
           Thread.sleep(delayMs);
         } catch (InterruptedException ie) {
           Thread.currentThread().interrupt();
-          log.warn("Payment {} processing interrupted", payment.getCorrelationId());
+          log.debug("Payment {} processing interrupted", payment.getCorrelationId());
           return;
         }
         processPaymentWithRetry(payment, attempts - 1);

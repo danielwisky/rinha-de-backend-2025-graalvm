@@ -82,17 +82,5 @@ resilience4j:
       payment-processor-fallback:
         timeoutDuration: 1500ms
 
-payment:
-  reprocessing:
-    enabled: false
-    interval: 300000  # 5 minutos
-
 server:
   shutdown: graceful
-  undertow:
-    threads:
-      io: 4
-      worker: 200
-    buffer-size: 1024
-    max-http-post-size: 0
-    direct-buffers: true
