@@ -12,6 +12,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -23,9 +24,11 @@ import lombok.NoArgsConstructor;
 @Entity(name = "payments")
 @Table(
     indexes = {
-        @Index(name = "uk_payments_correlation_id", columnList = "correlation_id", unique = true),
         @Index(name = "idx_payments_created_date", columnList = "created_date"),
         @Index(name = "idx_payments_created_date_processor_type", columnList = "created_date, processor_type")
+    },
+    uniqueConstraints = {
+        @UniqueConstraint(name = "uk_payments_correlation_id", columnNames = {"correlation_id"})
     })
 public class PaymentEntity implements Serializable {
 
@@ -39,7 +42,7 @@ public class PaymentEntity implements Serializable {
   private Double amount;
   @Column(name = "processor_type")
   private String processorType;
-  @Column(name = "correlation_id")
+  @Column(name = "correlation_id", nullable = false)
   private String correlationId;
   @Column(name = "created_date")
   private LocalDateTime createdDate;

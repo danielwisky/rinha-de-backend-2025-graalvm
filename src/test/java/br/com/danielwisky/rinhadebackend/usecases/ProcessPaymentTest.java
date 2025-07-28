@@ -15,6 +15,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.springframework.dao.DataIntegrityViolationException;
 
 @DisplayName("ProcessPayment Test")
 class ProcessPaymentTest extends TestSupport {
@@ -29,13 +30,12 @@ class ProcessPaymentTest extends TestSupport {
   private ExternalPaymentGateway externalPaymentGateway;
 
   @Test
-  @DisplayName("should process payment successfully when correlation id does not exist")
-  void shouldProcessPaymentSuccessfullyWhenCorrelationIdDoesNotExist() throws Exception {
+  @DisplayName("should process payment successfully")
+  void shouldProcessPaymentSuccessfully() {
     // Given
     final Payment inputPayment = PaymentTemplate.valid();
     final Payment externalPayment = PaymentTemplate.validDefault();
 
-    when(paymentDataGateway.existsByCorrelationId(inputPayment.getCorrelationId())).thenReturn(false);
     when(externalPaymentGateway.payment(inputPayment)).thenReturn(externalPayment);
     when(paymentDataGateway.save(externalPayment)).thenReturn(externalPayment);
 
@@ -43,39 +43,20 @@ class ProcessPaymentTest extends TestSupport {
     processPayment.execute(inputPayment);
 
     // Then
-    verify(paymentDataGateway).existsByCorrelationId(inputPayment.getCorrelationId());
     verify(externalPaymentGateway).payment(inputPayment);
     verify(paymentDataGateway).save(externalPayment);
   }
 
   @Test
-  @DisplayName("should skip processing when correlation id already exists")
-  void shouldSkipProcessingWhenCorrelationIdAlreadyExists() throws Exception {
+  @DisplayName("should retry payment on temporary failures and succeed")
+  void shouldRetryPaymentOnTemporaryFailuresAndSucceed() {
     // Given
     final Payment inputPayment = PaymentTemplate.valid();
+    final Payment externalPayment = PaymentTemplate.validDefault();
 
-    when(paymentDataGateway.existsByCorrelationId(inputPayment.getCorrelationId())).thenReturn(true);
-
-    // When
-    processPayment.execute(inputPayment);
-
-    // Then
-    verify(paymentDataGateway).existsByCorrelationId(inputPayment.getCorrelationId());
-    verify(externalPaymentGateway, never()).payment(any());
-    verify(paymentDataGateway, never()).save(any());
-  }
-
-  @Test
-  @DisplayName("should retry payment on external gateway failure")
-  void shouldRetryPaymentOnExternalGatewayFailure() throws Exception {
-    // Given
-    final Payment inputPayment = PaymentTemplate.valid();
-    final Payment externalPayment = PaymentTemplate.validFallback();
-
-    when(paymentDataGateway.existsByCorrelationId(inputPayment.getCorrelationId())).thenReturn(false);
     when(externalPaymentGateway.payment(inputPayment))
-        .thenThrow(new RuntimeException("External service error"))
-        .thenThrow(new RuntimeException("External service error"))
+        .thenThrow(new RuntimeException("Temporary external service error"))
+        .thenThrow(new RuntimeException("Temporary external service error"))
         .thenReturn(externalPayment);
     when(paymentDataGateway.save(externalPayment)).thenReturn(externalPayment);
 
@@ -83,50 +64,65 @@ class ProcessPaymentTest extends TestSupport {
     processPayment.execute(inputPayment);
 
     // Then
-    verify(paymentDataGateway, times(3)).existsByCorrelationId(inputPayment.getCorrelationId());
     verify(externalPaymentGateway, times(3)).payment(inputPayment);
     verify(paymentDataGateway).save(externalPayment);
   }
 
   @Test
-  @DisplayName("should retry payment on data gateway failure")
-  void shouldRetryPaymentOnDataGatewayFailure() throws Exception {
+  @DisplayName("should retry payment on data gateway failure and succeed")
+  void shouldRetryPaymentOnDataGatewayFailureAndSucceed() {
     // Given
     final Payment inputPayment = PaymentTemplate.valid();
     final Payment externalPayment = PaymentTemplate.validDefault();
 
-    when(paymentDataGateway.existsByCorrelationId(inputPayment.getCorrelationId())).thenReturn(false);
     when(externalPaymentGateway.payment(inputPayment)).thenReturn(externalPayment);
     when(paymentDataGateway.save(externalPayment))
-        .thenThrow(new RuntimeException("Database error"))
-        .thenThrow(new RuntimeException("Database error"))
+        .thenThrow(new RuntimeException("Temporary database error"))
+        .thenThrow(new RuntimeException("Temporary database error"))
         .thenReturn(externalPayment);
 
     // When
     processPayment.execute(inputPayment);
 
     // Then
-    verify(paymentDataGateway, times(3)).existsByCorrelationId(inputPayment.getCorrelationId());
     verify(externalPaymentGateway, times(3)).payment(inputPayment);
     verify(paymentDataGateway, times(3)).save(externalPayment);
   }
 
   @Test
   @DisplayName("should stop retrying after maximum attempts reached")
-  void shouldStopRetryingAfterMaximumAttemptsReached() throws Exception {
+  void shouldStopRetryingAfterMaximumAttemptsReached() {
     // Given
     final Payment inputPayment = PaymentTemplate.valid();
 
-    when(paymentDataGateway.existsByCorrelationId(inputPayment.getCorrelationId())).thenReturn(false);
     when(externalPaymentGateway.payment(inputPayment))
-        .thenThrow(new RuntimeException("External service error"));
+        .thenThrow(new RuntimeException("Persistent external service error"));
 
     // When
     processPayment.execute(inputPayment);
 
     // Then
-    verify(paymentDataGateway, times(3)).existsByCorrelationId(inputPayment.getCorrelationId());
     verify(externalPaymentGateway, times(3)).payment(inputPayment);
     verify(paymentDataGateway, never()).save(any());
+  }
+
+  @Test
+  @DisplayName("should not retry on duplicate correlation id violation")
+  void shouldNotRetryOnDuplicateCorrelationIdViolation() {
+    // Given
+    final Payment inputPayment = PaymentTemplate.valid();
+    final Payment externalPayment = PaymentTemplate.validDefault();
+
+    when(externalPaymentGateway.payment(inputPayment)).thenReturn(externalPayment);
+    when(paymentDataGateway.save(externalPayment))
+        .thenThrow(new DataIntegrityViolationException("Duplicate correlation_id"));
+
+    // When
+    processPayment.execute(inputPayment);
+
+    // Then
+    verify(externalPaymentGateway).payment(inputPayment);
+    verify(paymentDataGateway).save(externalPayment);
+    // Should not retry - only called once
   }
 }

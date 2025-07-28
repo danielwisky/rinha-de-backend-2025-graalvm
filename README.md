@@ -105,32 +105,11 @@ GET /payments-summary?from=2020-07-10T12:34:56.000Z&to=2020-07-10T12:35:56.000Z
 
 ### Core
 
-- **Java 24** + **GraalVM** - Runtime otimizado
-- **Spring Boot 3.5.3** - Framework web
-- **Spring Data JPA** - Persistência com Criteria API
-- **PostgreSQL** - Banco de dados relacional
-- **Hibernate** - ORM com queries otimizadas
-
-### Performance & Concorrência
-
-- **Virtual Threads** - Concorrência moderna do Java 21+
-- **OpenFeign** - Cliente HTTP declarativo
-- **Connection Pooling** - Otimização de conexões
-- **Custom Indexes** - Índices para queries de agregação
-
-### Qualidade & Testes
-
-- **TestContainers** - Testes de integração reais
-- **MockServer** - Simulação de serviços externos
-- **Templates Pattern** - Criação consistente de dados de teste
-- **Mockito** - Testes unitários
-- **AssertJ** - Assertions fluentes
-
-### DevOps
-
-- **Docker** + **Docker Compose** - Containerização
-- **Maven** - Gerenciamento de dependências
-- **Nginx** - Load balancer
+- **Java 24** + **GraalVM**
+- **Spring Boot 3.5.3**
+- **Spring Data JPA**
+- **PostgreSQL**
+- **Hibernate**
 
 ## ⚡ Execução
 
@@ -154,14 +133,7 @@ docker-compose up -d
 ### 3. Testes Locais
 
 ```bash
-# Testes unitários
 ./mvnw test
-
-# Testes de integração
-./mvnw test -Dtest="*IntegrationTest"
-
-# Teste específico
-./mvnw test -Dtest=PaymentSummaryControllerTest
 ```
 
 ## 🔧 Configuração

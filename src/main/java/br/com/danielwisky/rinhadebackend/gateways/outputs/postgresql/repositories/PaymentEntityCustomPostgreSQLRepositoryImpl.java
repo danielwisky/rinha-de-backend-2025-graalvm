@@ -1,7 +1,6 @@
 package br.com.danielwisky.rinhadebackend.gateways.outputs.postgresql.repositories;
 
 import static br.com.danielwisky.rinhadebackend.utils.PredicateUtils.addGreaterThanOrEqualToIfNotNull;
-import static br.com.danielwisky.rinhadebackend.utils.PredicateUtils.addIsNotNull;
 import static br.com.danielwisky.rinhadebackend.utils.PredicateUtils.addLessThanOrEqualToIfNotNull;
 
 import br.com.danielwisky.rinhadebackend.gateways.outputs.postgresql.entities.PaymentEntity;
@@ -32,7 +31,6 @@ public class PaymentEntityCustomPostgreSQLRepositoryImpl
     final Root<PaymentEntity> root = query.from(PaymentEntity.class);
 
     final var predicates = new ArrayList<Predicate>();
-    addIsNotNull(predicates, criteriaBuilder, root, "processorType");
     addGreaterThanOrEqualToIfNotNull(predicates, criteriaBuilder, root, "createdDate", from);
     addLessThanOrEqualToIfNotNull(predicates, criteriaBuilder, root, "createdDate", to);
     final var predicate = PredicateUtils.reduceWithAndOperator(criteriaBuilder, predicates);
@@ -44,6 +42,10 @@ public class PaymentEntityCustomPostgreSQLRepositoryImpl
         .groupBy(root.get("processorType"))
         .where(predicate);
 
-    return new PaymentSummaryEntity(entityManager.createQuery(query).getResultList());
+    final var typedQuery = entityManager.createQuery(query);
+    typedQuery.setHint("org.hibernate.readOnly", true);
+    typedQuery.setHint("org.hibernate.fetchSize", 100);
+
+    return new PaymentSummaryEntity(typedQuery.getResultList());
   }
 }

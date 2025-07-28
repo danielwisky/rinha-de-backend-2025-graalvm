@@ -12,13 +12,15 @@ spring:
       client:
         config:
           payment-processor:
-            connectTimeout: 2000
-            readTimeout: 3000
-            loggerLevel: basic
+            connectTimeout: 500
+            readTimeout: 1000
+            loggerLevel: none
           payment-processor-fallback:
-            connectTimeout: 2000
-            readTimeout: 3000
-            loggerLevel: basic
+            connectTimeout: 500
+            readTimeout: 1000
+            loggerLevel: none
+      retry:
+        enabled: false
   lifecycle:
     timeout-per-shutdown-phase: 30s
   jackson:
@@ -58,23 +60,30 @@ resilience4j:
   circuitbreaker:
     instances:
       payment-processor:
-        slidingWindowSize: 5
-        minimumNumberOfCalls: 3
-        failureRateThreshold: 50
-        waitDurationInOpenState: 5s
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 60
+        waitDurationInOpenState: 2s
         automaticTransitionFromOpenToHalfOpenEnabled: true
       payment-processor-fallback:
-        slidingWindowSize: 5
-        minimumNumberOfCalls: 3
-        failureRateThreshold: 50
-        waitDurationInOpenState: 5s
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 60
+        waitDurationInOpenState: 2s
         automaticTransitionFromOpenToHalfOpenEnabled: true
   timelimiter:
     instances:
       payment-processor:
-        timeoutDuration: 3s
+        timeoutDuration: 1s
       payment-processor-fallback:
-        timeoutDuration: 3s
+        timeoutDuration: 1s
 
 server:
   shutdown: graceful
+  tomcat:
+    threads:
+      max: 200
+      min-spare: 20
+    connection-timeout: 5s
+    max-connections: 8192
+    accept-count: 100
