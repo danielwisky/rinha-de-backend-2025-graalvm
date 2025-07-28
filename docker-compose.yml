@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   api01: &api
-    image: rinhadebackend:0.0.1-SNAPSHOT
+    image: danielwisky/rinha-java-2025:1.0.0
     hostname: api01
     environment:
       - POSTGRES_URI=jdbc:postgresql://db:5432/rinha
