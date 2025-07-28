@@ -12,12 +12,12 @@ spring:
       client:
         config:
           payment-processor:
-            connectTimeout: 500
-            readTimeout: 1000
+            connectTimeout: 1000
+            readTimeout: 2000
             loggerLevel: none
           payment-processor-fallback:
             connectTimeout: 500
-            readTimeout: 1000
+            readTimeout: 1500
             loggerLevel: none
       retry:
         enabled: false
@@ -60,30 +60,39 @@ resilience4j:
   circuitbreaker:
     instances:
       payment-processor:
-        slidingWindowSize: 10
-        minimumNumberOfCalls: 5
-        failureRateThreshold: 60
-        waitDurationInOpenState: 2s
+        slidingWindowSize: 20
+        minimumNumberOfCalls: 10
+        failureRateThreshold: 80
+        waitDurationInOpenState: 5s
         automaticTransitionFromOpenToHalfOpenEnabled: true
+        slowCallRateThreshold: 70
+        slowCallDurationThreshold: 1500ms
       payment-processor-fallback:
-        slidingWindowSize: 10
-        minimumNumberOfCalls: 5
-        failureRateThreshold: 60
-        waitDurationInOpenState: 2s
+        slidingWindowSize: 15
+        minimumNumberOfCalls: 8
+        failureRateThreshold: 90
+        waitDurationInOpenState: 3s
         automaticTransitionFromOpenToHalfOpenEnabled: true
+        slowCallRateThreshold: 80
+        slowCallDurationThreshold: 1200ms
   timelimiter:
     instances:
       payment-processor:
-        timeoutDuration: 1s
+        timeoutDuration: 2s
       payment-processor-fallback:
-        timeoutDuration: 1s
+        timeoutDuration: 1500ms
+
+payment:
+  reprocessing:
+    enabled: false
+    interval: 300000  # 5 minutos
 
 server:
   shutdown: graceful
-  tomcat:
+  undertow:
     threads:
-      max: 200
-      min-spare: 20
-    connection-timeout: 5s
-    max-connections: 8192
-    accept-count: 100
+      io: 4
+      worker: 200
+    buffer-size: 1024
+    max-http-post-size: 0
+    direct-buffers: true
