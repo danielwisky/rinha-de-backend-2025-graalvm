@@ -17,6 +17,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.springframework.dao.DataIntegrityViolationException;
 
 @DisplayName("ProcessPayment Test")
 class ProcessPaymentTest extends TestSupport {
@@ -42,7 +43,7 @@ class ProcessPaymentTest extends TestSupport {
 
     // When
     processPayment.execute(inputPayment);
-    
+
     // Then - Wait for virtual thread to complete
     await().atMost(Duration.ofSeconds(1)).untilAsserted(() -> {
       verify(externalPaymentGateway).payment(inputPayment);
@@ -51,8 +52,8 @@ class ProcessPaymentTest extends TestSupport {
   }
 
   @Test
-  @DisplayName("should retry payment on temporary failures and succeed (5 attempts)")
-  void shouldRetryPaymentOnTemporaryFailuresAndSucceed() {
+  @DisplayName("should retry payment with exponential backoff (5 attempts)")
+  void shouldRetryPaymentWithExponentialBackoff() {
     // Given
     final Payment inputPayment = PaymentTemplate.valid();
     final Payment externalPayment = PaymentTemplate.validDefault();
@@ -65,8 +66,8 @@ class ProcessPaymentTest extends TestSupport {
 
     // When
     processPayment.execute(inputPayment);
-    
-    // Then - Wait for virtual thread to complete
+
+    // Then - Wait for virtual thread to complete (includes delays: 50ms + 100ms)
     await().atMost(Duration.ofSeconds(2)).untilAsserted(() -> {
       verify(externalPaymentGateway, times(3)).payment(inputPayment);
       verify(paymentDataGateway).save(externalPayment);
@@ -74,22 +75,22 @@ class ProcessPaymentTest extends TestSupport {
   }
 
   @Test
-  @DisplayName("should retry payment on data gateway failure and succeed (5 attempts)")
-  void shouldRetryPaymentOnDataGatewayFailureAndSucceed() {
+  @DisplayName("should retry on database failures with exponential backoff")
+  void shouldRetryOnDatabaseFailuresWithExponentialBackoff() {
     // Given
     final Payment inputPayment = PaymentTemplate.valid();
     final Payment externalPayment = PaymentTemplate.validDefault();
 
     when(externalPaymentGateway.payment(inputPayment)).thenReturn(externalPayment);
     when(paymentDataGateway.save(externalPayment))
-        .thenThrow(new RuntimeException("Temporary database error"))
-        .thenThrow(new RuntimeException("Temporary database error"))
+        .thenThrow(new RuntimeException("Database connection error"))
+        .thenThrow(new RuntimeException("Database timeout"))
         .thenReturn(externalPayment);
 
     // When
     processPayment.execute(inputPayment);
-    
-    // Then - Wait for virtual thread to complete
+
+    // Then - Wait for virtual thread (includes delays: 50ms + 100ms)
     await().atMost(Duration.ofSeconds(2)).untilAsserted(() -> {
       verify(externalPaymentGateway, times(3)).payment(inputPayment);
       verify(paymentDataGateway, times(3)).save(externalPayment);
@@ -97,8 +98,8 @@ class ProcessPaymentTest extends TestSupport {
   }
 
   @Test
-  @DisplayName("should stop retrying after maximum attempts reached (5 attempts)")
-  void shouldStopRetryingAfterMaximumAttemptsReached() {
+  @DisplayName("should stop retrying after maximum attempts (5) with exponential backoff")
+  void shouldStopRetryingAfterMaximumAttempts() {
     // Given
     final Payment inputPayment = PaymentTemplate.valid();
 
@@ -107,8 +108,8 @@ class ProcessPaymentTest extends TestSupport {
 
     // When
     processPayment.execute(inputPayment);
-    
-    // Then - Wait for virtual thread to complete all retry attempts
+
+    // Then - Wait for all retries (delays: 50ms + 100ms + 150ms + 200ms = 500ms)
     await().atMost(Duration.ofSeconds(3)).untilAsserted(() -> {
       verify(externalPaymentGateway, times(5)).payment(inputPayment);
       verify(paymentDataGateway, never()).save(any());
@@ -116,8 +117,30 @@ class ProcessPaymentTest extends TestSupport {
   }
 
   @Test
-  @DisplayName("should handle mixed failures with retries (5 attempts)")
-  void shouldHandleMixedFailuresWithRetries() {
+  @DisplayName("should not retry on duplicate correlation id violation")
+  void shouldNotRetryOnDuplicateCorrelationIdViolation() {
+    // Given
+    final Payment inputPayment = PaymentTemplate.valid();
+    final Payment externalPayment = PaymentTemplate.validDefault();
+
+    when(externalPaymentGateway.payment(inputPayment)).thenReturn(externalPayment);
+    when(paymentDataGateway.save(externalPayment))
+        .thenThrow(new DataIntegrityViolationException("Duplicate correlation_id"));
+
+    // When
+    processPayment.execute(inputPayment);
+
+    // Then - Should not retry, complete quickly
+    await().atMost(Duration.ofSeconds(1)).untilAsserted(() -> {
+      verify(externalPaymentGateway).payment(inputPayment);
+      verify(paymentDataGateway).save(externalPayment);
+      // Should not retry - only called once each
+    });
+  }
+
+  @Test
+  @DisplayName("should handle mixed failures with proper exponential backoff")
+  void shouldHandleMixedFailuresWithExponentialBackoff() {
     // Given
     final Payment inputPayment = PaymentTemplate.valid();
     final Payment externalPayment = PaymentTemplate.validDefault();
@@ -135,8 +158,8 @@ class ProcessPaymentTest extends TestSupport {
 
     // When
     processPayment.execute(inputPayment);
-    
-    // Then - Wait for virtual thread to complete
+
+    // Then - Wait for retries (delays: 50ms + 100ms + 150ms = 300ms)
     await().atMost(Duration.ofSeconds(3)).untilAsserted(() -> {
       verify(externalPaymentGateway, times(4)).payment(inputPayment);
       verify(paymentDataGateway, times(4)).save(externalPayment);
