@@ -13,13 +13,16 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ProcessPayment {
 
+  private static final int ATTEMPTS = 20;
+  private static final int DELAY = 50;
+
   private final PaymentDataGateway paymentDataGateway;
   private final ExternalPaymentGateway externalPaymentGateway;
 
   public void execute(final Payment payment) {
     Thread.startVirtualThread(() -> {
       log.debug("Processing payment in virtual thread: {}", payment.getCorrelationId());
-      processPaymentWithRetry(payment, 5);
+      processPaymentWithRetry(payment, ATTEMPTS);
     });
   }
 
@@ -41,7 +44,7 @@ public class ProcessPayment {
 
       if (attempts > 1) {
         // Exponential backoff - wait before retry to avoid overwhelming services
-        int delayMs = (6 - attempts) * 50; // 50ms, 100ms, 150ms, 200ms
+        int delayMs = ((ATTEMPTS + 1) - attempts) * DELAY;
         try {
           Thread.sleep(delayMs);
         } catch (InterruptedException ie) {
