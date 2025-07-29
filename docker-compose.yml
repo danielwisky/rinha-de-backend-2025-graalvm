@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   api01: &api
-    image: danielwisky/rinha-java-2025:1.0.1
+    image: rinhadebackend:1.1.0
     hostname: api01
     environment:
       - POSTGRES_URI=jdbc:postgresql://db:5432/rinha
@@ -10,16 +10,19 @@ services:
       - POSTGRES_PASSWORD=rinha
       - PAYMENT_PROCESSOR_DEFAULT_URL=http://payment-processor-default:8080
       - PAYMENT_PROCESSOR_FALLBACK_URL=http://payment-processor-fallback:8080
+      - MQTT_BROKER_URL=tcp://mosquitto:1883
     expose:
       - "8080"
     depends_on:
       db:
         condition: service_healthy
+      mosquitto:
+        condition: service_started
     deploy:
       resources:
         limits:
           cpus: "0.5"
-          memory: "110MB"
+          memory: "95MB"
     networks:
       - backend
       - payment-processor
@@ -31,7 +34,7 @@ services:
       resources:
         limits:
           cpus: "0.5"
-          memory: "110MB"
+          memory: "95MB"
 
   nginx:
     image: nginx:alpine
@@ -42,6 +45,24 @@ services:
       - api02
     ports:
       - "9999:9999"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.1"
+          memory: "30MB"
+    networks:
+      - backend
+
+  mosquitto:
+    image: eclipse-mosquitto:2.0
+    hostname: mosquitto
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_logs:/mosquitto/log
+    command: mosquitto -c /mosquitto-no-auth.conf
     deploy:
       resources:
         limits:
@@ -68,13 +89,15 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.4"
+          cpus: "0.3"
           memory: "100MB"
     networks:
       - backend
 
 volumes:
   postgres_data:
+  mosquitto_data:
+  mosquitto_logs:
 
 networks:
   backend:

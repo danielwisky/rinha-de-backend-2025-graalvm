@@ -14,13 +14,14 @@
 
   <groupId>br.com.danielwisky</groupId>
   <artifactId>rinhadebackend</artifactId>
-  <version>1.0.3</version>
+  <version>1.1.0</version>
   <name>rinhadebackend</name>
   <description>Rinha de Backend - 2025</description>
 
   <properties>
     <java.version>24</java.version>
     <spring-cloud.version>2025.0.0</spring-cloud.version>
+    <mqtt.version>1.2.5</mqtt.version>
     <testcontainers.version>1.21.3</testcontainers.version>
     <mockserver-netty.version>5.15.0</mockserver-netty.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -45,6 +46,17 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+
+    <!-- mqtt -->
+    <dependency>
+      <groupId>org.springframework.integration</groupId>
+      <artifactId>spring-integration-mqtt</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.paho</groupId>
+      <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
+      <version>${mqtt.version}</version>
     </dependency>
 
     <!-- openfeign -->
@@ -95,6 +107,12 @@
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>mockserver</artifactId>
+      <version>${testcontainers.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>junit-jupiter</artifactId>
       <version>${testcontainers.version}</version>
       <scope>test</scope>
     </dependency>
