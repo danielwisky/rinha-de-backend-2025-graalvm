@@ -1,0 +1,11 @@
+[
+  {
+    "name": "br.com.danielwisky.rinhadebackend.gateways.outputs.mqtt.resources.ProcessPaymentOutputResource"
+  },
+  {
+    "name": "br.com.danielwisky.rinhadebackend.gateways.inputs.mqtt.resources.ProcessPaymentInputResource"
+  },
+  {
+    "name": "br.com.danielwisky.rinhadebackend.domains.Payment"
+  }
+] 

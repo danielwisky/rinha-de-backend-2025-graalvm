@@ -1,0 +1,29 @@
+[
+  {
+    "name": "br.com.danielwisky.rinhadebackend.gateways.outputs.mqtt.resources.ProcessPaymentOutputResource",
+    "allDeclaredConstructors": true,
+    "allDeclaredMethods": true,
+    "allDeclaredFields": true,
+    "allPublicMethods": true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "br.com.danielwisky.rinhadebackend.gateways.inputs.mqtt.resources.ProcessPaymentInputResource",
+    "allDeclaredConstructors": true,
+    "allDeclaredMethods": true,
+    "allDeclaredFields": true,
+    "allPublicMethods": true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "br.com.danielwisky.rinhadebackend.domains.Payment",
+    "allDeclaredConstructors": true,
+    "allDeclaredMethods": true,
+    "allDeclaredFields": true,
+    "allPublicMethods": true,
+    "allPublicFields": true,
+    "allPublicConstructors": true
+  }
+] 

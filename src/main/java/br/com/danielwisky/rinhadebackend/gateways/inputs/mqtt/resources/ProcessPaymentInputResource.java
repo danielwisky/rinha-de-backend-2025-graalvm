@@ -1,22 +1,33 @@
 package br.com.danielwisky.rinhadebackend.gateways.inputs.mqtt.resources;
 
 import br.com.danielwisky.rinhadebackend.domains.Payment;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serial;
 import java.io.Serializable;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 public class ProcessPaymentInputResource implements Serializable {
 
   @Serial
   private static final long serialVersionUID = 1L;
 
+  @JsonProperty("correlationId")
   private String correlationId;
+  
+  @JsonProperty("amount")
   private Double amount;
+
+  @JsonCreator
+  public ProcessPaymentInputResource(
+      @JsonProperty("correlationId") final String correlationId,
+      @JsonProperty("amount") final Double amount) {
+    this.correlationId = correlationId;
+    this.amount = amount;
+  }
 
   public Payment toDomain() {
     return Payment.builder()
