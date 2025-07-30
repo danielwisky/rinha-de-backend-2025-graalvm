@@ -15,11 +15,11 @@ payment:
   mqtt:
     broker:
       url: ${MQTT_BROKER_URL}
-      username:
-      password:
-    topic: $share/payment-processor-group/payments.processing
+      username: ${MQTT_BROKER_USERNAME:}
+      password: ${MQTT_BROKER_PASSWORD:}
+    topic: ${MQTT_TOPIC}
     client:
-      group-id: payment-processor-group
+      group-id: ${MQTT_CLIENT_GROUP_ID}
 
 external-api:
   payment-processor:

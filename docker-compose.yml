@@ -11,6 +11,10 @@ services:
       - PAYMENT_PROCESSOR_DEFAULT_URL=http://payment-processor-default:8080
       - PAYMENT_PROCESSOR_FALLBACK_URL=http://payment-processor-fallback:8080
       - MQTT_BROKER_URL=tcp://mosquitto:1883
+      - MQTT_BROKER_USERNAME=
+      - MQTT_BROKER_PASSWORD=
+      - MQTT_TOPIC=payments.processing.api01
+      - MQTT_CLIENT_GROUP_ID=payment-processor-api01
     expose:
       - "8080"
     depends_on:
@@ -30,6 +34,17 @@ services:
   api02:
     <<: *api
     hostname: api02
+    environment:
+      - POSTGRES_URI=jdbc:postgresql://db:5432/rinha
+      - POSTGRES_USER=rinha
+      - POSTGRES_PASSWORD=rinha
+      - PAYMENT_PROCESSOR_DEFAULT_URL=http://payment-processor-default:8080
+      - PAYMENT_PROCESSOR_FALLBACK_URL=http://payment-processor-fallback:8080
+      - MQTT_BROKER_URL=tcp://mosquitto:1883
+      - MQTT_BROKER_USERNAME=
+      - MQTT_BROKER_PASSWORD=
+      - MQTT_TOPIC=payments.processing.api02
+      - MQTT_CLIENT_GROUP_ID=payment-processor-api02
     deploy:
       resources:
         limits:
