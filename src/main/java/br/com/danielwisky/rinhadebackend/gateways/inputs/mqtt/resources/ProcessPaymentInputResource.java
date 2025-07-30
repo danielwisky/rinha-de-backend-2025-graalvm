@@ -17,7 +17,7 @@ public class ProcessPaymentInputResource implements Serializable {
 
   @JsonProperty("correlationId")
   private String correlationId;
-  
+
   @JsonProperty("amount")
   private Double amount;
 
