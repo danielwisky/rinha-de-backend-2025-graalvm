@@ -1,5 +1,7 @@
 package br.com.danielwisky.rinhadebackend.gateways.outputs.mqtt;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import br.com.danielwisky.rinhadebackend.domains.Payment;
 import br.com.danielwisky.rinhadebackend.gateways.outputs.PaymentMessageGateway;
 import br.com.danielwisky.rinhadebackend.gateways.outputs.mqtt.resources.ProcessPaymentOutputResource;
@@ -10,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class PaymentMessageGatewayMQTTImpl implements PaymentMessageGateway {
+public class PaymentMessageGatewayMqttImpl implements PaymentMessageGateway {
 
   private final MqttPaymentPublisher mqttPaymentPublisher;
   private final JsonUtils jsonUtils;
@@ -21,6 +23,6 @@ public class PaymentMessageGatewayMQTTImpl implements PaymentMessageGateway {
   @Override
   public void sendPaymentMessage(final Payment payment) {
     final var paymentJson = jsonUtils.toJson(new ProcessPaymentOutputResource(payment));
-    mqttPaymentPublisher.sendPayment(paymentTopic, paymentJson);
+    mqttPaymentPublisher.sendPayment(paymentTopic, paymentJson.getBytes(UTF_8));
   }
 }

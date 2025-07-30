@@ -17,7 +17,7 @@ payment:
       url: ${MQTT_BROKER_URL}
       username:
       password:
-    topic: payments.processing
+    topic: $share/payment-processor-group/payments.processing
     client:
       group-id: payment-processor-group
 

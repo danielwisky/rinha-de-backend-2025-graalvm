@@ -1,30 +1,23 @@
 package br.com.danielwisky.rinhadebackend.configs.mqtt;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.integration.annotation.IntegrationComponentScan;
+import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.channel.DirectChannel;
-import org.springframework.integration.config.EnableIntegration;
-import org.springframework.integration.mqtt.core.DefaultMqttPahoClientFactory;
-import org.springframework.integration.mqtt.core.MqttPahoClientFactory;
+import org.springframework.integration.mqtt.core.Mqttv5ClientManager;
+import org.springframework.integration.mqtt.inbound.Mqttv5PahoMessageDrivenChannelAdapter;
+import org.springframework.integration.mqtt.outbound.Mqttv5PahoMessageHandler;
 import org.springframework.messaging.MessageChannel;
+import org.springframework.messaging.MessageHandler;
 
 @Slf4j
 @Configuration
-@EnableIntegration
-@IntegrationComponentScan(basePackages = {
-    "br.com.danielwisky.rinhadebackend.gateways.outputs.mqtt",
-    "br.com.danielwisky.rinhadebackend.gateways.inputs.mqtt"
-})
 public class MqttConfiguration {
-
-  private static final int CONNECTION_TIMEOUT_SECONDS = 10;
-  private static final int KEEP_ALIVE_INTERVAL_SECONDS = 20;
-  private static final boolean CLEAN_SESSION = false;
-  private static final boolean AUTO_RECONNECT = true;
 
   @Value("${payment.mqtt.broker.url}")
   private String brokerUrl;
@@ -35,12 +28,38 @@ public class MqttConfiguration {
   @Value("${payment.mqtt.broker.password:}")
   private String password;
 
+  @Value("${payment.mqtt.topic}")
+  private String paymentTopic;
+
+  @Value("${payment.mqtt.client.group-id}")
+  private String clientGroupId;
+
   @Bean
-  public MqttPahoClientFactory mqttClientFactory() {
-    final var factory = new DefaultMqttPahoClientFactory();
-    final var options = createConnectionOptions();
-    factory.setConnectionOptions(options);
-    return factory;
+  public MqttConnectionOptions mqttConnectionOptions() {
+    final var options = new MqttConnectionOptions();
+    options.setServerURIs(new String[]{brokerUrl});
+
+    if (isNotBlank(username)) {
+      options.setUserName(username);
+    }
+
+    if (isNotBlank(password)) {
+      options.setPassword(password.getBytes());
+    }
+
+    options.setCleanStart(true);
+    options.setAutomaticReconnect(true);
+    return options;
+  }
+
+  @Bean
+  public Mqttv5ClientManager mqttConsumerClientManager() {
+    return new Mqttv5ClientManager(mqttConnectionOptions(), clientGroupId + "-consumer");
+  }
+
+  @Bean
+  public Mqttv5ClientManager mqttProducerClientManager() {
+    return new Mqttv5ClientManager(mqttConnectionOptions(), clientGroupId + "-producer");
   }
 
   @Bean
@@ -53,22 +72,21 @@ public class MqttConfiguration {
     return new DirectChannel();
   }
 
-  private MqttConnectOptions createConnectionOptions() {
-    final var options = new MqttConnectOptions();
-    options.setServerURIs(new String[]{brokerUrl});
+  @Bean
+  public Mqttv5PahoMessageDrivenChannelAdapter paymentMqttInboundAdapter() {
+    final var adapter =
+        new Mqttv5PahoMessageDrivenChannelAdapter(mqttConsumerClientManager(), paymentTopic);
+    adapter.setOutputChannel(paymentMqttInputChannel());
+    adapter.setQos(1);
+    return adapter;
+  }
 
-    if (!username.isEmpty()) {
-      options.setUserName(username);
-    }
-    if (!password.isEmpty()) {
-      options.setPassword(password.toCharArray());
-    }
-
-    options.setCleanSession(CLEAN_SESSION);
-    options.setAutomaticReconnect(AUTO_RECONNECT);
-    options.setConnectionTimeout(CONNECTION_TIMEOUT_SECONDS);
-    options.setKeepAliveInterval(KEEP_ALIVE_INTERVAL_SECONDS);
-
-    return options;
+  @Bean
+  @ServiceActivator(inputChannel = "paymentMqttOutboundChannel")
+  public MessageHandler paymentMqttOutboundHandler() {
+    final var messageHandler = new Mqttv5PahoMessageHandler(mqttProducerClientManager());
+    messageHandler.setAsync(true);
+    messageHandler.setDefaultQos(1);
+    return messageHandler;
   }
 }

@@ -8,5 +8,5 @@ import org.springframework.messaging.handler.annotation.Payload;
 @MessagingGateway(defaultRequestChannel = "paymentMqttOutboundChannel")
 public interface MqttPaymentPublisher {
 
-  void sendPayment(@Header(MqttHeaders.TOPIC) String topic, @Payload String message);
+  void sendPayment(@Header(MqttHeaders.TOPIC) String topic, @Payload byte[] message);
 }

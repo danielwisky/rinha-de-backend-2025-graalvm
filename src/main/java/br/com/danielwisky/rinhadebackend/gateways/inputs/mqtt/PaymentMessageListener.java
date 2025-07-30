@@ -1,5 +1,7 @@
 package br.com.danielwisky.rinhadebackend.gateways.inputs.mqtt;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import br.com.danielwisky.rinhadebackend.gateways.inputs.mqtt.resources.ProcessPaymentInputResource;
 import br.com.danielwisky.rinhadebackend.gateways.outputs.mqtt.MqttPaymentPublisher;
 import br.com.danielwisky.rinhadebackend.usecases.ProcessPayment;
@@ -16,20 +18,22 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class PaymentMessageListener {
 
-  @Value("${payment.mqtt.topic}")
-  private String paymentTopic;
-
   private final ProcessPayment processPayment;
   private final MqttPaymentPublisher mqttPaymentPublisher;
   private final JsonUtils jsonUtils;
 
+  @Value("${payment.mqtt.topic}")
+  private String paymentTopic;
+
   @ServiceActivator(inputChannel = "paymentMqttInputChannel")
-  public void handlePaymentMessage(@Payload final String message) {
+  public void handlePaymentMessage(@Payload final byte[] messageBytes) {
     try {
-      final var resource = jsonUtils.toObject(message, ProcessPaymentInputResource.class);
-      processPayment.execute(resource.toDomain());
+      final var messageContent = new String(messageBytes, UTF_8);
+      final var paymentRequest =
+          jsonUtils.toObject(messageContent, ProcessPaymentInputResource.class);
+      processPayment.execute(paymentRequest.toDomain());
     } catch (Exception e) {
-      mqttPaymentPublisher.sendPayment(paymentTopic, message);
+      mqttPaymentPublisher.sendPayment(paymentTopic, messageBytes);
     }
   }
 }
