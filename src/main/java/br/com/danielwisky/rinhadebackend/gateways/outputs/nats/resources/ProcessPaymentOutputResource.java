@@ -1,4 +1,4 @@
-package br.com.danielwisky.rinhadebackend.gateways.outputs.mqtt.resources;
+package br.com.danielwisky.rinhadebackend.gateways.outputs.nats.resources;
 
 import br.com.danielwisky.rinhadebackend.domains.Payment;
 import com.fasterxml.jackson.annotation.JsonProperty;

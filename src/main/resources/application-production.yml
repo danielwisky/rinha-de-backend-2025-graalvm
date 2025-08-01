@@ -11,15 +11,9 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
-payment:
-  mqtt:
-    broker:
-      url: ${MQTT_BROKER_URL}
-      username: ${MQTT_BROKER_USERNAME:}
-      password: ${MQTT_BROKER_PASSWORD:}
-    topic: ${MQTT_TOPIC}
-    client:
-      group-id: ${MQTT_CLIENT_GROUP_ID}
+nats:
+  url: ${NATS_URL:nats://localhost:4222}
+  subject: ${NATS_SUBJECT:payments.processing}
 
 external-api:
   payment-processor:

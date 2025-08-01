@@ -10,15 +10,9 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
-payment:
-  mqtt:
-    broker:
-      url: tcp://mosquitto:1883
-      username:
-      password:
-    topic: payments.processing
-    client:
-      group-id: payment-processor-group
+nats:
+  url: nats://localhost:4222
+  subject: payments.processing
 
 external-api:
   payment-processor:

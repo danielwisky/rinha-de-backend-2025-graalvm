@@ -1,4 +1,4 @@
-package br.com.danielwisky.rinhadebackend.gateways.inputs.mqtt;
+package br.com.danielwisky.rinhadebackend.gateways.inputs.nats;
 
 import static br.com.danielwisky.rinhadebackend.domains.enums.ProcessorType.DEFAULT;
 import static br.com.danielwisky.rinhadebackend.domains.enums.ProcessorType.FALLBACK;
@@ -25,8 +25,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
 
-@DisplayName("PaymentMessageListener Test")
-class PaymentMessageListenerTest extends TestContainerSupport {
+@DisplayName("PaymentNatsSubscriber Test")
+class PaymentNatsSubscriberTest extends TestContainerSupport {
 
   @Autowired
   private PaymentMessageGateway paymentMessageGateway;

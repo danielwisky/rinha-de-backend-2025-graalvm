@@ -13,7 +13,7 @@ public class MockServerContainerConfiguration extends MockServerContainer {
     super(DockerImageName.parse(IMAGE_NAME));
   }
 
-  public static synchronized MockServerContainerConfiguration getInstance() {
+  public static MockServerContainerConfiguration getInstance() {
     if (container == null) {
       container = new MockServerContainerConfiguration();
     }
