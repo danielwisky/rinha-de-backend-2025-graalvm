@@ -14,13 +14,14 @@
 
   <groupId>br.com.danielwisky</groupId>
   <artifactId>rinhadebackend</artifactId>
-  <version>1.0.3</version>
+  <version>1.1.0</version>
   <name>rinhadebackend</name>
   <description>Rinha de Backend - 2025</description>
 
   <properties>
     <java.version>24</java.version>
     <spring-cloud.version>2025.0.0</spring-cloud.version>
+    <nats.version>2.20.2</nats.version>
     <testcontainers.version>1.21.3</testcontainers.version>
     <mockserver-netty.version>5.15.0</mockserver-netty.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -45,6 +46,13 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+
+    <!-- nats -->
+    <dependency>
+      <groupId>io.nats</groupId>
+      <artifactId>jnats</artifactId>
+      <version>${nats.version}</version>
     </dependency>
 
     <!-- openfeign -->
@@ -99,6 +107,12 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>${testcontainers.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.mock-server</groupId>
       <artifactId>mockserver-netty</artifactId>
       <version>${mockserver-netty.version}</version>
@@ -123,6 +137,19 @@
       <plugin>
         <groupId>org.graalvm.buildtools</groupId>
         <artifactId>native-maven-plugin</artifactId>
+        <configuration>
+          <buildArgs>
+            <buildArg>--initialize-at-build-time=org.slf4j.helpers.NOPLoggerFactory</buildArg>
+            <buildArg>--initialize-at-run-time=io.nats.client</buildArg>
+            <buildArg>--enable-url-protocols=http,https</buildArg>
+          </buildArgs>
+          <metadataRepository>
+            <enabled>true</enabled>
+          </metadataRepository>
+          <configurationFileDirectories>
+            <configurationFileDirectory>${project.basedir}/src/main/resources/META-INF/native-image</configurationFileDirectory>
+          </configurationFileDirectories>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.springframework.boot</groupId>

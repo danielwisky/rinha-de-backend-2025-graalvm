@@ -68,13 +68,13 @@ resilience4j:
         slowCallRateThreshold: 70
         slowCallDurationThreshold: 1500ms
       payment-processor-fallback:
-        slidingWindowSize: 15
-        minimumNumberOfCalls: 8
-        failureRateThreshold: 90
-        waitDurationInOpenState: 3s
+        slidingWindowSize: 20
+        minimumNumberOfCalls: 10
+        failureRateThreshold: 95
+        waitDurationInOpenState: 2s
         automaticTransitionFromOpenToHalfOpenEnabled: true
-        slowCallRateThreshold: 80
-        slowCallDurationThreshold: 1200ms
+        slowCallRateThreshold: 85
+        slowCallDurationThreshold: 2000ms
   timelimiter:
     instances:
       payment-processor:

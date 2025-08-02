@@ -11,6 +11,13 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
+nats:
+  url: ${NATS_URL:nats://nats:4222}
+  subject: ${NATS_SUBJECT:payments.processing}
+  consumer:
+    concurrency: ${NATS_CONSUMER_CONCURRENCY:15}
+    queue-group: ${NATS_CONSUMER_QUEUE_GROUP:payment-processors}
+
 external-api:
   payment-processor:
     url: ${PAYMENT_PROCESSOR_DEFAULT_URL:http://payment-processor-default:8080}

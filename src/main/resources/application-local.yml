@@ -10,6 +10,13 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
+nats:
+  url: nats://localhost:4222
+  subject: payments.processing
+  consumer:
+    concurrency: 5
+    queue-group: payment-processors-local
+
 external-api:
   payment-processor:
     url: http://payment-processor-default:8080

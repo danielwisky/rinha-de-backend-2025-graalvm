@@ -14,15 +14,20 @@ public abstract class TestContainerSupport extends TestSupport {
 
   protected static final PostgreSQLContainerConfiguration postgreSQLContainer;
   protected static final MockServerContainerConfiguration mockServerContainer;
+  protected static final NatsContainerConfiguration natsContainer;
   protected static final MockServerClient mockServerClient;
 
   static {
     postgreSQLContainer = PostgreSQLContainerConfiguration.getInstance();
     postgreSQLContainer.start();
+
     mockServerContainer = MockServerContainerConfiguration.getInstance();
     mockServerContainer.start();
     mockServerClient =
         new MockServerClient(mockServerContainer.getHost(), mockServerContainer.getServerPort());
+
+    natsContainer = NatsContainerConfiguration.getInstance();
+    natsContainer.start();
   }
 
   @Autowired

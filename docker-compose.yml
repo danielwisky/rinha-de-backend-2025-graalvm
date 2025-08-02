@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   api01: &api
-    image: danielwisky/rinha-java-2025:1.0.1
+    image: danielwisky/rinha-java-2025:1.1.0
     hostname: api01
     environment:
       - POSTGRES_URI=jdbc:postgresql://db:5432/rinha
@@ -10,16 +10,22 @@ services:
       - POSTGRES_PASSWORD=rinha
       - PAYMENT_PROCESSOR_DEFAULT_URL=http://payment-processor-default:8080
       - PAYMENT_PROCESSOR_FALLBACK_URL=http://payment-processor-fallback:8080
+      - NATS_URL=nats://nats:4222
+      - NATS_SUBJECT=payments.processing
+      - NATS_CONSUMER_CONCURRENCY=5
+      - NATS_CONSUMER_QUEUE_GROUP=payment-processors
     expose:
       - "8080"
     depends_on:
       db:
         condition: service_healthy
+      nats:
+        condition: service_healthy
     deploy:
       resources:
         limits:
           cpus: "0.5"
-          memory: "110MB"
+          memory: "100MB"
     networks:
       - backend
       - payment-processor
@@ -27,11 +33,21 @@ services:
   api02:
     <<: *api
     hostname: api02
+    environment:
+      - POSTGRES_URI=jdbc:postgresql://db:5432/rinha
+      - POSTGRES_USER=rinha
+      - POSTGRES_PASSWORD=rinha
+      - PAYMENT_PROCESSOR_DEFAULT_URL=http://payment-processor-default:8080
+      - PAYMENT_PROCESSOR_FALLBACK_URL=http://payment-processor-fallback:8080
+      - NATS_URL=nats://nats:4222
+      - NATS_SUBJECT=payments.processing
+      - NATS_CONSUMER_CONCURRENCY=5
+      - NATS_CONSUMER_QUEUE_GROUP=payment-processors
     deploy:
       resources:
         limits:
           cpus: "0.5"
-          memory: "110MB"
+          memory: "100MB"
 
   nginx:
     image: nginx:alpine
@@ -47,6 +63,26 @@ services:
         limits:
           cpus: "0.1"
           memory: "30MB"
+    networks:
+      - backend
+
+  nats:
+    image: nats:2-alpine
+    container_name: nats
+    hostname: nats
+    ports:
+      - "4222:4222"
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "localhost", "4222" ]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: "0.1"
+          memory: "20MB"
     networks:
       - backend
 
@@ -68,7 +104,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.4"
+          cpus: "0.3"
           memory: "100MB"
     networks:
       - backend

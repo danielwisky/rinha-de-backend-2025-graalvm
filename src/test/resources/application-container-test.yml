@@ -10,6 +10,10 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
+nats:
+  url: ${NATS_URL:nats://localhost:4222}
+  subject: ${NATS_SUBJECT:payments.processing.test}
+
 external-api:
   payment-processor:
     url: ${MOCKSERVER_URI}

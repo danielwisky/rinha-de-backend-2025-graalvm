@@ -1,0 +1,25 @@
+{
+  "resources": {
+    "includes": [
+      {
+        "pattern": "\\Qapplication.yml\\E"
+      },
+      {
+        "pattern": "\\Qapplication-production.yml\\E"
+      },
+      {
+        "pattern": "\\Qapplication-local.yml\\E"
+      },
+      {
+        "pattern": "\\Qbanner.txt\\E"
+      },
+      {
+        "pattern": "\\QMETA-INF/spring.factories\\E"
+      },
+      {
+        "pattern": "\\QMETA-INF/additional-spring-configuration-metadata.json\\E"
+      }
+    ]
+  },
+  "bundles": []
+}
