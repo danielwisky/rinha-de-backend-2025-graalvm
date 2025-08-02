@@ -1,0 +1,80 @@
+[
+  {
+    "name": "br.com.danielwisky.rinhadebackend.gateways.outputs.nats.resources.ProcessPaymentOutputResource",
+    "allDeclaredConstructors": true,
+    "allDeclaredMethods": true,
+    "allDeclaredFields": true
+  },
+  {
+    "name": "br.com.danielwisky.rinhadebackend.gateways.inputs.nats.resources.ProcessPaymentInputResource",
+    "allDeclaredConstructors": true,
+    "allDeclaredMethods": true,
+    "allDeclaredFields": true
+  },
+  {
+    "name": "br.com.danielwisky.rinhadebackend.gateways.inputs.http.resources.request.PaymentRequest",
+    "allDeclaredConstructors": true,
+    "allDeclaredMethods": true,
+    "allDeclaredFields": true
+  },
+  {
+    "name": "br.com.danielwisky.rinhadebackend.gateways.inputs.http.resources.response.ErrorResponse",
+    "allDeclaredConstructors": true,
+    "allDeclaredMethods": true,
+    "allDeclaredFields": true
+  },
+  {
+    "name": "br.com.danielwisky.rinhadebackend.gateways.inputs.http.resources.response.SummaryResponse",
+    "allDeclaredConstructors": true,
+    "allDeclaredMethods": true,
+    "allDeclaredFields": true
+  },
+  {
+    "name": "br.com.danielwisky.rinhadebackend.gateways.inputs.http.resources.response.PaymentSummaryResponse",
+    "allDeclaredConstructors": true,
+    "allDeclaredMethods": true,
+    "allDeclaredFields": true
+  },
+  {
+    "name": "br.com.danielwisky.rinhadebackend.gateways.outputs.http.client.resources.request.PaymentRequest",
+    "allDeclaredConstructors": true,
+    "allDeclaredMethods": true,
+    "allDeclaredFields": true
+  },
+  {
+    "name": "br.com.danielwisky.rinhadebackend.gateways.outputs.http.client.resources.request.PaymentFallbackRequest",
+    "allDeclaredConstructors": true,
+    "allDeclaredMethods": true,
+    "allDeclaredFields": true
+  },
+  {
+    "name": "br.com.danielwisky.rinhadebackend.gateways.outputs.http.client.resources.response.PaymentResponse",
+    "allDeclaredConstructors": true,
+    "allDeclaredMethods": true,
+    "allDeclaredFields": true
+  },
+  {
+    "name": "br.com.danielwisky.rinhadebackend.gateways.outputs.http.client.resources.response.PaymentFallbackResponse",
+    "allDeclaredConstructors": true,
+    "allDeclaredMethods": true,
+    "allDeclaredFields": true
+  },
+  {
+    "name": "br.com.danielwisky.rinhadebackend.domains.Payment",
+    "allDeclaredConstructors": true,
+    "allDeclaredMethods": true,
+    "allDeclaredFields": true
+  },
+  {
+    "name": "br.com.danielwisky.rinhadebackend.domains.PaymentSummary",
+    "allDeclaredConstructors": true,
+    "allDeclaredMethods": true,
+    "allDeclaredFields": true
+  },
+  {
+    "name": "br.com.danielwisky.rinhadebackend.domains.Summary",
+    "allDeclaredConstructors": true,
+    "allDeclaredMethods": true,
+    "allDeclaredFields": true
+  }
+]

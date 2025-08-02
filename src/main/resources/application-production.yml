@@ -12,7 +12,7 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
 nats:
-  url: ${NATS_URL:nats://localhost:4222}
+  url: ${NATS_URL:nats://nats:4222}
   subject: ${NATS_SUBJECT:payments.processing}
 
 external-api:
