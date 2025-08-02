@@ -1,7 +1,6 @@
 package br.com.danielwisky.rinhadebackend.gateways.inputs.nats.resources;
 
 import br.com.danielwisky.rinhadebackend.domains.Payment;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serial;
 import java.io.Serializable;
@@ -20,14 +19,6 @@ public class ProcessPaymentInputResource implements Serializable {
 
   @JsonProperty("amount")
   private Double amount;
-
-  @JsonCreator
-  public ProcessPaymentInputResource(
-      @JsonProperty("correlationId") final String correlationId,
-      @JsonProperty("amount") final Double amount) {
-    this.correlationId = correlationId;
-    this.amount = amount;
-  }
 
   public Payment toDomain() {
     return Payment.builder()
