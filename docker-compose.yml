@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   api01: &api
-    image: rinhadebackend:1.1.0
+    image: danielwisky/rinha-java-2025:1.1.0
     hostname: api01
     environment:
       - POSTGRES_URI=jdbc:postgresql://db:5432/rinha
@@ -11,7 +11,9 @@ services:
       - PAYMENT_PROCESSOR_DEFAULT_URL=http://payment-processor-default:8080
       - PAYMENT_PROCESSOR_FALLBACK_URL=http://payment-processor-fallback:8080
       - NATS_URL=nats://nats:4222
-      - NATS_SUBJECT=api01.payments.processing
+      - NATS_SUBJECT=payments.processing
+      - NATS_CONSUMER_CONCURRENCY=5
+      - NATS_CONSUMER_QUEUE_GROUP=payment-processors
     expose:
       - "8080"
     depends_on:
@@ -38,7 +40,9 @@ services:
       - PAYMENT_PROCESSOR_DEFAULT_URL=http://payment-processor-default:8080
       - PAYMENT_PROCESSOR_FALLBACK_URL=http://payment-processor-fallback:8080
       - NATS_URL=nats://nats:4222
-      - NATS_SUBJECT=api02.payments.processing
+      - NATS_SUBJECT=payments.processing
+      - NATS_CONSUMER_CONCURRENCY=5
+      - NATS_CONSUMER_QUEUE_GROUP=payment-processors
     deploy:
       resources:
         limits:
